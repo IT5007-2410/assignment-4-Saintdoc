@@ -50,11 +50,11 @@ import {
 class IssueFilter extends React.Component {
     render() {
       return (
-        <>
+        <View>
         {/****** Q1: Start Coding here. ******/}
-
+        <Text>This is a placeholder for the issue filter.</Text>
         {/****** Q1: Code ends here ******/}
-        </>
+        </View>
       );
     }
 }
@@ -72,13 +72,25 @@ const width= [40,80,80,80,80,80,200];
 function IssueRow(props) {
     const issue = props.issue;
     {/****** Q2: Coding Starts here. Create a row of data in a variable******/}
+    const rowData = (
+      <View style={styles.row}>
+        <Text>{issue.id}</Text>
+        <Text>{issue.status}</Text>
+        <Text>{issue.owner}</Text>
+        <Text>{issue.created.toDateString()}</Text>
+        <Text>{issue.effort}</Text>
+        <Text>{issue.due ? issue.due.toDateString() : ''}</Text>
+        <Text>{issue.title}</Text>
+      </View>
+
+    );
     {/****** Q2: Coding Ends here.******/}
     return (
-      <>
+      <View>
       {/****** Q2: Start Coding here. Add Logic to render a row  ******/}
-      
+      {rowData}
       {/****** Q2: Coding Ends here. ******/}  
-      </>
+      </View>
     );
   }
   
@@ -89,6 +101,17 @@ function IssueRow(props) {
     );
 
     {/****** Q2: Start Coding here. Add Logic to initalize table header  ******/}
+    const tableHeader = (
+      <View>
+        <Text>ID</Text>
+        <Text>Status</Text>
+        <Text>Owner</Text>
+        <Text>Created</Text>
+        <Text>Effort</Text>
+        <Text>Due Date</Text>
+        <Text>Title</Text>
+      </View>
+    );
 
     {/****** Q2: Coding Ends here. ******/}
     
@@ -96,7 +119,8 @@ function IssueRow(props) {
     return (
     <View style={styles.container}>
     {/****** Q2: Start Coding here to render the table header/rows.**********/}
-    
+    {tableHeader}
+    {issueRows}
     {/****** Q2: Coding Ends here. ******/}
     </View>
     );
@@ -108,39 +132,77 @@ function IssueRow(props) {
       super();
       this.handleSubmit = this.handleSubmit.bind(this);
       /****** Q3: Start Coding here. Create State to hold inputs******/
+      this.state = {owner: '', title: '',  };
+      this.handleChange = this.handleChange.bind(this);
       /****** Q3: Code Ends here. ******/
     }
   
     /****** Q3: Start Coding here. Add functions to hold/set state input based on changes in TextInput******/
+    handleChange(name, value) {this.setState({ [name]: value });}
     /****** Q3: Code Ends here. ******/
     
     handleSubmit() {
       /****** Q3: Start Coding here. Create an issue from state variables and call createIssue. Also, clear input field in front-end******/
-      /****** Q3: Code Ends here. ******/
+      const { owner, title } = this.state;
+      if (owner && title) {
+        const issue = {
+          owner,
+          title,
+          due: new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 10),
+        };
+        this.props.createIssue(issue);
+        this.setState({ owner: '', title: '' });
+      }
     }
+      /****** Q3: Code Ends here. ******/
   
     render() {
       return (
           <View>
           {/****** Q3: Start Coding here. Create TextInput field, populate state variables. Create a submit button, and on submit, trigger handleSubmit.*******/}
+          <TextInput
+          placeholder="Owner"
+          value={this.state.owner}
+          onChangeText={(text) => this.handleChange('owner', text)}
+          />
+          <TextInput
+          placeholder="Title"
+          value={this.state.title}
+          onChangeText={(text) => this.handleChange('title', text)}
+          />
+          <Button
+          title="Add"
+          onPress={this.handleSubmit}
+          />
           {/****** Q3: Code Ends here. ******/}
           </View>
       );
     }
   }
 
+
 class BlackList extends React.Component {
     constructor()
     {   super();
         this.handleSubmit = this.handleSubmit.bind(this);
         /****** Q4: Start Coding here. Create State to hold inputs******/
+        this.state = {name: ''};
         /****** Q4: Code Ends here. ******/
     }
     /****** Q4: Start Coding here. Add functions to hold/set state input based on changes in TextInput******/
+    setName(newname)
+    {
+      this.setState({name: newname});
+    }
     /****** Q4: Code Ends here. ******/
 
     async handleSubmit() {
     /****** Q4: Start Coding here. Create an issue from state variables and issue a query. Also, clear input field in front-end******/
+    const query = 'mutation myaddToBlacklist ($newname: String!){addToBlacklist(nameInput: $newname)}';
+    const newname = this.state.name;
+    console.log(newname)
+    const data = await graphQLFetch(query, {newname});
+    this.newnameInput.clear();
     /****** Q4: Code Ends here. ******/
     }
 
@@ -148,6 +210,13 @@ class BlackList extends React.Component {
     return (
         <View>
         {/****** Q4: Start Coding here. Create TextInput field, populate state variables. Create a submit button, and on submit, trigger handleSubmit.*******/}
+        <TextInput
+            ref={input => { this.newnameInput = input; }}
+            placeholder="Name To Blacklist"
+            value={this.state.name}
+            onChangeText={(text) => this.setName(text)}
+        />
+        <Button onPress={this.handleSubmit} title="Add To Blacklist"/>
         {/****** Q4: Code Ends here. ******/}
         </View>
     );
@@ -197,17 +266,21 @@ export default class IssueList extends React.Component {
     return (
     <>
     {/****** Q1: Start Coding here. ******/}
+    <IssueFilter/>
     {/****** Q1: Code ends here ******/}
 
 
     {/****** Q2: Start Coding here. ******/}
+    <IssueTable issues={this.state.issues}/>
     {/****** Q2: Code ends here ******/}
 
     
     {/****** Q3: Start Coding here. ******/}
+    <IssueAdd createIssue={this.createIssue}/>
     {/****** Q3: Code Ends here. ******/}
 
     {/****** Q4: Start Coding here. ******/}
+    <BlackList/>
     {/****** Q4: Code Ends here. ******/}
     </>
       
